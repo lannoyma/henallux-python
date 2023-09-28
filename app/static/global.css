@@ -1,0 +1,30 @@
+body {
+	background-color: red;
+}
+ 
+#game-grid td{
+	border: 2px solid black;
+}
+
+#game-grid td .player {
+	background: url(player.png);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+}
+
+
+#game-grid td.player-one {
+	background-color: red;
+}
+
+#game-grid td.player-two {
+	background-color: navy;
+}
+.controller {
+	text-align: center;
+	display: none;
+}
+
+#error {
+	display: none;
+}
