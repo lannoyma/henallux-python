@@ -17,4 +17,7 @@ For the moment no database is plugged to the application, state of the game is s
 
 Error management: A userfriendly message is displayed to the user for any 400 HTTP error. The other errors such as 500, will redirect to a 500 error page.
 
-Next step: database + redirection to 500 error page
+Next step:
+  - database
+  - redirection to 500 error page
+  - Checking if game is over
