@@ -4,7 +4,8 @@
 Henallux AI is a game powered by AI
 
 ## Installation
-To be documented
+- Install Python >= 3.11
+- Install Flask >= 2.3.3
 
 ## Execution
 In root directory, run python run.py
