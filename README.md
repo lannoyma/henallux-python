@@ -8,7 +8,9 @@ Henallux AI is a game powered by AI
 - Install Flask >= 2.3.3
 
 ## Execution
-In root directory, run python run.py
+In root directory, run in command line
+- .venv\Scripts\activate (To activate the server environment)
+- python run.py (Lauch the application)
 
 ## Developpement:
 Currently it's possible to start a new game and to move each smiley. Forbidden moves are already taken into account.
