@@ -1,10 +1,15 @@
 from flask import Flask, render_template, jsonify, g, request, session
 from collections import deque
 from markupsafe import escape
+from modules.my_module import greet
 
 app = Flask(__name__)
 app.secret_key = 'super secret key'
 app.config['SESSION_TYPE'] = 'filesystem'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////db.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
 class GameManagement:
     def new_game(self, dimensions):
