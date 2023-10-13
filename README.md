@@ -27,3 +27,11 @@ Enclos detection: Working
 Next steps:
   - database
   - redirection to 500 error page
+
+## Database schema
+Game
+- id: BIGINT
+- started_at: DATETIME
+- active_player: {0, -1, 1} // 0 = Game ended
+- board: LONGTEXT // 2D array representing each cell state
+- type: {HUMAN_VS_HUMAN, HUMAN_VS_AI, AI_VS_AI}
