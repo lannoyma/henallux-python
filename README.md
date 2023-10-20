@@ -6,7 +6,7 @@ Henallux AI is a game powered by AI
 ## Dependencies
 See requirements.txt
 
-## Instalation
+## Installation
 Run pip install -r requirements.txt
 
 ## Execution
@@ -28,7 +28,7 @@ Game session: You can continue a game by using its id in the browser URL : /game
 Next steps:
   - redirection to 500 error page
   - Review user error message
-  - 
+  - Code cleaning: Currently db model is in the management module. To be reviewed
 
 ## Database schema
 Game
