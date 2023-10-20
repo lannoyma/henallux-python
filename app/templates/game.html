@@ -106,7 +106,7 @@
 				url: "{{ url_for('move') }}",
 				type: 'GET',
 				dataType: 'json',
-				data: { direction: direction, player: player },
+				data: { direction: direction, player: player, gameId: game.id},
 				success: function(response) {
 				  refreshGame(response);
 				},
@@ -149,12 +149,17 @@
 	
 	$( document ).ready(function() {
 	hideError();
+	let params = (new URL(document.location)).searchParams;
+	let gameId = params.get("gameId");
     $.ajax({
-            url: "{{ url_for('loadGame') }}",
+            url: "{{ url_for('loadGame') }}?gameId=" + gameId ,
             type: 'GET',
             dataType: 'json',
             success: function(response) {
+				var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?gameId=' + response.id;
+				window.history.pushState({path:newurl},'',newurl);
               refreshGame(response);
+			  
             },
             error: function(error) {
                 console.log(error);
