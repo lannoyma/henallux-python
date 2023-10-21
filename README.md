@@ -10,6 +10,7 @@ See requirements.txt
 Run pip install -r requirements.txt
 
 ## Execution
+For development purpose only. This section can be ignored
 In root directory, run in command line
 - .venv\Scripts\activate (To activate the server environment)
 - python run.py (Lauch the application)
