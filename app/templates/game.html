@@ -119,7 +119,7 @@
 	
 	function refreshGame(new_game) {
 		game = new_game;
-		var tableau = $('#game-grid');
+		const tableau = $('#game-grid');
                 tableau.empty();
 				if (game.activePlayer === 0) {
 					tableau.append('<tr><td>La partie est terminée</td></tr>');
@@ -149,10 +149,15 @@
 	
 	$( document ).ready(function() {
 	hideError();
+	let url = "{{ url_for('loadGame') }}";
 	let params = (new URL(document.location)).searchParams;
+	console.log(params);
 	let gameId = params.get("gameId");
+	if (gameId && gameId !== 'null') {
+		url += "?gameId=" + gameId;
+	}
     $.ajax({
-            url: "{{ url_for('loadGame') }}?gameId=" + gameId ,
+            url: url ,
             type: 'GET',
             dataType: 'json',
             success: function(response) {
