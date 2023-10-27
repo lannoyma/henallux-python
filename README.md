@@ -3,11 +3,14 @@
 ## Presentation
 Henallux AI is a game powered by AI
 
+## Dependencies
+See requirements.txt
+
 ## Installation
-- Install Python >= 3.11
-- Install Flask >= 2.3.3
+Run pip install -r requirements.txt
 
 ## Execution
+For development purpose only. This section can be ignored
 In root directory, run in command line
 - .venv\Scripts\activate (To activate the server environment)
 - python run.py (Lauch the application)
@@ -16,17 +19,18 @@ In root directory, run in command line
 Currently it's possible to start a new game and to move each smiley. Forbidden moves are already taken into account.
 Moves can be performed through the UI or by pressing keyboard arrows.
 
-For the moment no database is plugged to the application, state of the game is stored in session.
+- Error management: A userfriendly message is displayed to the user for any 400 HTTP error. The other errors such as 500, will redirect to a 500 error page.
+- Game over: Game ends when all points have been won by players
+- Enclos detection: Working
+- Database: Fully working with transaction management
+- Game session: You can continue a game by using its id in the browser URL : /game?gameId=11
 
-Error management: A userfriendly message is displayed to the user for any 400 HTTP error. The other errors such as 500, will redirect to a 500 error page.
-
-Game over: Game ends when all points have been won by players
-
-Enclos detection: Working
 
 Next steps:
-  - database
   - redirection to 500 error page
+  - Review user error message
+  - Code cleaning: Currently db model is in the management module. To be reviewed
+  - AI
 
 ## Database schema
 Game
