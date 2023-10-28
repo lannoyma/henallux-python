@@ -1,25 +1,34 @@
-import pickle
-from flask import Flask, g, abort
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
-from flask_sqlalchemy import SQLAlchemy
+from flask import abort
 from .models import Game, GameType, Direction
-from sqlalchemy import DateTime, LargeBinary
-from datetime import datetime
 from collections import deque
 import logging as lg
+from typing import List
 
 class GameManagement:
     # ----------------------------------------------------------- PUBLIC METHODS -------------------------------------------------------------------------------
-    def new_game(self, dimensions, game_type = GameType.HUMAN_VS_AI):
-        """ Initialize a new game board with the given dimensions.
+    def new_game(self, dimensions: int, game_type = GameType.HUMAN_VS_AI):
+        """
+        Create a new game board with the specified dimensions and game type.
 
-        Args:
-            dimensions (int): The width/height of the board.
+        Parameters:
+            - dimensions (int): The dimensions (size) of the game board.
+            - game_type (GameType): The type of the game (default: GameType.HUMAN_VS_AI).
 
         Returns:
-            list: A 2D list representing the game board.
+            List[List[int]]: A 2D list representing the initialized game board.
+
+        This method creates a new game board with the specified dimensions and initializes
+        it with values for the starting positions of players. The game board is represented
+        as a 2D list of integers, where:
+            - 1 indicates cell belonging to Player 1
+            - 2  indicates Player 1 position
+            - -1 indicates cell belonging to Player 2
+            - -2  indicates Player 2 position
+        Example:
+            new_board = self.new_game(8)  # Creates a new 8x8 game board for HUMAN_VS_AI.
         """
+        if dimensions > 100:
+            abort(500, description="BOARD_TOO_BIG")
         board = [[0]*dimensions for i in range(dimensions)]
         for row_index in range(dimensions):
             for col_index in range(dimensions):
@@ -31,7 +40,27 @@ class GameManagement:
                 board[row_index][col_index] = value
         return board
      
-    def move(self, board, active_player,direction: Direction, player):
+    def move(self, board: List[List[int]], active_player: int , direction: Direction, player: int):
+        """
+        Perform a move on the game board.
+
+        Parameters:
+            - board (List[List[int]]): The current state of the game board.
+            - active_player (int): The player who is currently taking their turn.
+            - direction (Direction): The direction in which to make the move.
+            - player (int): The player making the move.
+
+        Returns:
+            Tuple[List[List[int]], int]: A tuple containing the updated game board and the
+            result of the move (0 for game over, -active_player otherwise).
+
+        This method performs a move on the game board in the specified direction for the
+        given player. It checks if the move is valid, updates the board accordingly, and
+        checks for enclosures and game over conditions.
+
+        Example:
+            new_board, move_result = self.move(current_board, active_player, Direction.UP, player)
+        """
         lg.warning('Move player:' + str(player) + ' to ' + str(direction) + ' with active player = ' + str(active_player))
         if player != active_player:
             abort(400, description="MOVE_USER_NOT_ACTIVE")
@@ -56,7 +85,7 @@ class GameManagement:
         game_over = self.__is_game_over(board)
         return board, 0 if game_over else -active_player
 
-    def compute_points(self, board):
+    def compute_points(self, board: List[List[int]]):
         """
         Compute the points for each player based on the board state.
 
@@ -77,7 +106,24 @@ class GameManagement:
                     player_2_points += 1
         return player_1_points, player_2_points
         
-    def get_possible_directions(self, board, player):
+    def get_possible_directions(self, board: List[List[int]], player: int):
+        """
+        Get a list of possible directions for a player's move on the game board.
+
+        Parameters:
+            - board (List[List[int]]): The current state of the game board.
+            - player (int): The player for whom to find possible directions.
+
+        Returns:
+            List[Direction]: A list of directions in which the player can make a move.
+
+        This method calculates and returns a list of possible directions in which a player
+        can make a move on the game board based on the current game state and player's
+        position. The directions are represented as Direction enum values.
+
+        Example:
+            possible_directions = self.get_possible_directions(current_board, active_player)
+        """
         current_pos = self.__get_player_position(board, player)
         directions = []
         for direction in Direction:
@@ -87,7 +133,24 @@ class GameManagement:
 
 # ----------------------------------------------------------- PRIVATE METHODS -------------------------------------------------------------------------------
         
-    def __get_next_position(self, pos, direction):
+    def __get_next_position(self, pos, direction: Direction):
+        """
+        Get the next position based on the current position and direction.
+
+        Parameters:
+            - pos (Dict[int, int]): The current position as a dictionary with 'row' and 'col'.
+            - direction (Direction): The direction in which to calculate the next position.
+
+        Returns:
+            Dict[int, int]: A dictionary representing the next position with 'row' and 'col' keys.
+
+        This private method calculates and returns the next position based on the current
+        position and the specified direction. The result is a dictionary with 'row' and 'col'
+        keys representing the new position coordinates.
+
+        Example:
+            next_position = self.__get_next_position(current_position, Direction.UP)
+        """
         next_pos = {
                 "row": pos['row'],
                 "col": pos['col']
@@ -101,23 +164,91 @@ class GameManagement:
         if direction == Direction.RIGHT:
             next_pos["col"] = next_pos["col"] + 1
         return next_pos
-        
-        
-    def __belong_cell_to_opponent(self, board, pos, current_player):
-        value = board[pos['row']][pos['col']]
-        return value == -1 * current_player or value == -1 * current_player
 
-    def __is_cell_in_board(self, board, pos):
-        return pos['row'] >= 0 and pos['row'] < len(board) and pos['col'] >= 0 and pos['col'] < len(board[0])
+    def __is_cell_available(self, board: List[List[int]], pos, player: int):
+        """
+        Check if a cell at a given position is available for the current player.
 
-    def __is_cell_available(self, board, pos, player):
+        Parameters:
+            - board (List[List[int]]): The current state of the game board.
+            - pos (Dict[int, int]): The position to check as a dictionary with 'row' and 'col'.
+            - player (int): The current player for whom to check cell availability.
+
+        Returns:
+            bool: True if the cell is available for the current player, False otherwise.
+
+        This private method checks if a cell at a given position is available for the current
+        player to make a move. It returns True if the cell is within the board's bounds and
+        does not belong to the opponent of the current player.
+
+        Example:
+            is_available = self.__is_cell_available(current_board, cell_position, active_player)
+        """
         if not self.__is_cell_in_board(board, pos) :
             return False
         return not self.__belong_cell_to_opponent(board, pos, player)
+        
+    def __belong_cell_to_opponent(self, board: List[List[int]], pos, current_player: int):
+        """
+        Check if a cell on the game board belongs to the opponent of the current player.
+
+        Parameters:
+            - board (List[List[int]]): The current state of the game board.
+            - pos (Dict[int, int]): The position to check as a dictionary with 'row' and 'col'.
+            - current_player (int): The current player for whom to check cell ownership.
+
+        Returns:
+            bool: True if the cell belongs to the opponent, False otherwise.
+
+        This private method checks if a cell on the game board belongs to the opponent of
+        the current player. It returns True if the cell value is equal to the negation of
+        the current player's value.
+
+        Example:
+            is_opponent_cell = self.__belong_cell_to_opponent(current_board, cell_position, active_player)
+        """
+        value = board[pos['row']][pos['col']]
+        return value == -1 * current_player or value == -1 * current_player
+
+    def __is_cell_in_board(self, board: List[List[int]], pos):
+        """
+        Check if a given position is within the bounds of the game board.
+
+        Parameters:
+            - board (List[List[int]]): The current state of the game board.
+            - pos (Dict[int, int]): The position to check as a dictionary with 'row' and 'col'.
+
+        Returns:
+            bool: True if the position is within the board's bounds, False otherwise.
+
+        This private method checks if a given position is within the bounds of the game board.
+        It returns True if the position's row and column values are within the valid range of
+        the board dimensions.
+
+        Example:
+            is_in_board = self.__is_cell_in_board(current_board, cell_position)
+        """
+        return pos['row'] >= 0 and pos['row'] < len(board) and pos['col'] >= 0 and pos['col'] < len(board[0])
     
         
          
-    def __get_player_position(self, board, player):
+    def __get_player_position(self, board: List[List[int]], player: int):
+        """
+        Get the position of a player on the game board.
+
+        Parameters:
+            - board (List[List[int]]): The current state of the game board.
+            - player (int): The player for whom to find the position.
+
+        Returns:
+            Dict[int, int]: A dictionary representing the position with 'row' and 'col' keys.
+
+        This private method searches the game board to find the position of a player's piece.
+        It returns a dictionary with 'row' and 'col' keys representing the player's position.
+
+        Example:
+            player_position = self.__get_player_position(current_board, active_player)
+        """
         for i, line in enumerate(board):
             for j, cell in enumerate(line):
                 columns_count = j
@@ -175,7 +306,7 @@ class GameManagement:
                         board[i][j] = -1
         return board
 
-    def __bfs(self, board, i, j, reachable, player):
+    def __bfs(self, board, i, j, reachable, player: int):
         """
         Breadth-First Search to explore reachable positions for a player on the board.
 

@@ -17,16 +17,10 @@ management = GameManagement()
 # Waiting database to be ready to remove session variable use
 @app.route('/loadGame')
 def loadGame():
-    """
-    Initialize a new game session and respond with the initial game state.
-
-    Returns:
-        JSON: JSON data containing the initial game state.
-    """
     game_id = request.args.get('gameId')
     if game_id is None:
         game_type = GameType.HUMAN_VS_AI
-        board  = management.new_game(10, game_type)
+        board  = management.new_game(5, game_type)
         game = dao.create_one_game(board, game_type)
     else:
         print ('Game_id' + str(game_id))
@@ -53,10 +47,10 @@ def game():
 @app.route('/error')
 def error():
     """
-    Render the game HTML template.
+    Render the error HTML template.
 
     Returns:
-        HTML: Rendered HTML for the game.
+        HTML: Rendered HTML for the error.
     """
     "return error template"
     return render_template('error.html')
@@ -79,7 +73,7 @@ def move():
     Process a player's move, update the game state, and respond with the new state.
 
     Returns:
-        JSON/str: Updated game state in JSON format or an error message string.
+        JSON/str: Updated game state in JSON format or a 400 error if the move is not allowed
     """
     game_id = request.args['gameId']
     direction = request.args['direction']
@@ -95,6 +89,26 @@ def move():
     return convert_to_json(game)
 
 def automatic_move(board, active_player, game_type):
+    """
+    Perform an automatic move in the game.
+
+    Parameters:
+        - board (bi dimensional array of int): A bi-directional array representing the current state of the game.
+        - active_player (int): The active player: Possible values values are -1 and 1
+        - game_type (GameType): The game type (e.g., GameType.HUMAN_VS_AI).
+
+    Returns:
+        tuple: A tuple containing the updated board and the active player.
+
+    If active_player is -1 and game_type is GameType.HUMAN_VS_AI, the method attempts
+    to make an automatic move for the AI by selecting a random direction among the
+    available directions. If no possible directions are available, it returns the
+    unchanged board and the active player. Otherwise, it makes the move and returns
+    the updated board with the new active player.
+
+    Example:
+        board, active_player = automatic_move(board, active_player, GameType.HUMAN_VS_AI)
+    """
     if  active_player == -1 and game_type == GameType.HUMAN_VS_AI:
         app.logger.warn('Automatic move to be done')
         possible_directions = management.get_possible_directions(board, active_player)
@@ -106,6 +120,22 @@ def automatic_move(board, active_player, game_type):
     return board, active_player
 
 def convert_to_json(game: Game):
+    """
+    Convert a Game object to a JSON-formatted string.
+
+    Parameters:
+        - game (Game): The Game object to convert to JSON.
+
+    Returns:
+        str: A JSON-formatted string representing the Game object.
+
+    This function takes a Game object and converts it into a JSON-formatted string
+    that includes various properties of the game, such as its ID, active player,
+    game type, board state, and player points.
+
+    Example:
+        game_json = convert_to_json(game_instance)
+    """
     board = pickle.loads(game.board)
     player1_points, player2_points = management.compute_points(board)
     return json.dumps({
