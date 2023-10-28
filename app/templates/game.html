@@ -92,9 +92,9 @@
 		console.log(error);
 		if (error.status === 400) {
 			$( "#error" ).show();
-			$( "#error span" ).text(errorMessages.get(error.responseText));		
+			$( "#error span" ).text('Votre déplacement n\'est pas autorisé');
 		} else {
-			// redirect to 500 page
+			window.location.href = 'error';
 		}
 	}
 
@@ -122,18 +122,17 @@
 		const tableau = $('#game-grid');
                 tableau.empty();
 				if (game.activePlayer === 0) {
-					tableau.append('<tr><td>La partie est terminée</td></tr>');
-				} else {
-					new_game.board.forEach(function(ligne) {
-						var rowHTML = '<tr>';
-						ligne.forEach(function(value) {
-							rowHTML += '<td class="' + (value > 0 ? 'player-one' : (value < 0) ? 'player-two' : '')  + '"><div style="width: 50px; height: 50px;" class="' + ((value == 2 || value == -2) ? 'player' : '')  + '"></div></td>';
-						});
-						rowHTML += '</tr>';
-						console.log(rowHTML);
-						tableau.append(rowHTML);
+					tableau.append('<tr><td colspan="' + new_game.board[0].length + '">La partie est terminée</td></tr>');
+				} 
+				new_game.board.forEach(function(ligne) {
+					var rowHTML = '<tr>';
+					ligne.forEach(function(value) {
+						rowHTML += '<td class="' + (value > 0 ? 'player-one' : (value < 0) ? 'player-two' : '')  + '"><div style="width: 50px; height: 50px;" class="' + ((value == 2 || value == -2) ? 'player' : '')  + '"></div></td>';
 					});
-				}
+					rowHTML += '</tr>';
+					console.log(rowHTML);
+					tableau.append(rowHTML);
+				});
 				
 		$( ".player-two .controller" ).hide();
 		$( ".player-one .controller" ).hide();

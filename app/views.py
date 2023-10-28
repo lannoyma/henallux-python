@@ -7,6 +7,7 @@ from .management import GameManagement
 import json
 import pickle
 import random
+import logging as lg
     
 app = Flask(__name__)
 app.config.from_object('config')
@@ -46,9 +47,19 @@ def game():
     Returns:
         HTML: Rendered HTML for the game.
     """
-    "return index template"
+    "return game template"
     return render_template('game.html')
 
+@app.route('/error')
+def error():
+    """
+    Render the game HTML template.
+
+    Returns:
+        HTML: Rendered HTML for the game.
+    """
+    "return error template"
+    return render_template('error.html')
     
 @app.route('/')
 def index():
@@ -85,13 +96,13 @@ def move():
 
 def automatic_move(board, active_player, game_type):
     if  active_player == -1 and game_type == GameType.HUMAN_VS_AI:
+        app.logger.warn('Automatic move to be done')
         possible_directions = management.get_possible_directions(board, active_player)
+        app.logger.warn('Possible directions :' + str(possible_directions))
         if len(possible_directions) == 0 :
             return board, active_player
         random_index = random.randint(0, len(possible_directions) - 1)
-        print(str(len(possible_directions)) + ' ' +  str(list(Direction)) + '  ' + str(random_index))
-        direction = list(Direction)[random_index]
-        return management.move(board, active_player, direction, active_player)
+        return management.move(board, active_player, possible_directions[random_index], active_player)
     return board, active_player
 
 def convert_to_json(game: Game):
