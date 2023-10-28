@@ -19,17 +19,14 @@ In root directory, run in command line
 Currently it's possible to start a new game and to move each smiley. Forbidden moves are already taken into account.
 Moves can be performed through the UI or by pressing keyboard arrows.
 
-- Error management: A userfriendly message is displayed to the user for any 400 HTTP error. The other errors such as 500, will redirect to a 500 error page.
+- Error management: A userfriendly message is displayed to the user for any 400 HTTP error.
+- Other errors redirect to a 500 error page.
 - Game over: Game ends when all points have been won by players
 - Enclos detection: Working
-- Database: Fully working with transaction management
+- Database: Fully working
 - Game session: You can continue a game by using its id in the browser URL : /game?gameId=11
 
-
 Next steps:
-  - redirection to 500 error page
-  - Review user error message
-  - Code cleaning: Currently db model is in the management module. To be reviewed
   - AI
 
 ## Database schema
