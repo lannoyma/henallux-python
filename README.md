@@ -16,14 +16,17 @@ In root directory, run in command line
 - python run.py (Lauch the application)
 
 ## Developpement:
-Currently it's possible to start a new game and to move each smiley. Forbidden moves are already taken into account.
 Moves can be performed through the UI or by pressing keyboard arrows.
+Already done:
 
 - Error management: A userfriendly message is displayed to the user for any 400 HTTP error.
 - Other errors redirect to a 500 error page.
+- Forbidden moves taken into account
 - Game over: Game ends when all points have been won by players
 - Enclos detection: Working
 - Database: Fully working
+- Human vs Human working
+- Human vs naive AI working
 - Game session: You can continue a game by using its id in the browser URL : /game?gameId=11
 
 Next steps:
