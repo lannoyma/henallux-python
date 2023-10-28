@@ -1,6 +1,4 @@
-from flask import Flask, render_template, jsonify, g, request, session, abort
-from collections import deque
-from markupsafe import escape
+from flask import Flask, render_template, jsonify, g, request, abort
 from .models import Game, Direction, GameType
 from .dao import Dao
 from .management import GameManagement
@@ -13,10 +11,24 @@ app = Flask(__name__)
 app.config.from_object('config')
 dao = Dao()
 management = GameManagement()
-    
-# Waiting database to be ready to remove session variable use
+
 @app.route('/loadGame')
 def loadGame():
+    """
+    Load or create a game based on the provided 'gameId' query parameter.
+
+    Returns:
+        str: JSON-formatted string representing the game state.
+
+    This function checks if a 'gameId' query parameter is provided in the request.
+    If 'gameId' is None, it creates a new game of type 'GameType.HUMAN_VS_AI' with a
+    5x5 board and returns its JSON representation. If 'gameId' is provided, it attempts
+    to load the corresponding game from the database and, if found, performs an automatic
+    move based on the game's state and returns the updated JSON representation of the game.
+
+    Raises:
+        HTTPException(404): If no game is found with the provided 'gameId'.
+    """
     game_id = request.args.get('gameId')
     if game_id is None:
         game_type = GameType.HUMAN_VS_AI
