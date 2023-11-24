@@ -4,7 +4,6 @@ from .dao import Dao
 from .management import GameManagement
 import json
 import pickle
-import random
 import logging as lg
     
 app = Flask(__name__)
@@ -40,7 +39,7 @@ def loadGame():
         if game is None:
             abort(404, description="NO_GAME_FOUND")
         board = pickle.loads(game.board)
-        board, active_player = automatic_move(board, game.active_player, GameType[game.game_type])
+        board, active_player = management.automatic_move(board, game.active_player, GameType[game.game_type])
         if active_player != game.active_player:
             game = dao.update_one_game(game.id, board, active_player)
     return convert_to_json(game)
@@ -96,40 +95,9 @@ def move():
         abort(404, description="NO_GAME_FOUND")
     board = pickle.loads(game.board)
     board, active_player = management.move(board, game.active_player, Direction[direction], player)
-    board, active_player = automatic_move(board, active_player, GameType[game.game_type])
+    board, active_player = management.automatic_move(board, active_player, GameType[game.game_type])
     game = dao.update_one_game(game.id, board, active_player)
     return convert_to_json(game)
-
-def automatic_move(board, active_player, game_type):
-    """
-    Perform an automatic move in the game.
-
-    Parameters:
-        - board (bi dimensional array of int): A bi-directional array representing the current state of the game.
-        - active_player (int): The active player: Possible values values are -1 and 1
-        - game_type (GameType): The game type (e.g., GameType.HUMAN_VS_AI).
-
-    Returns:
-        tuple: A tuple containing the updated board and the active player.
-
-    If active_player is -1 and game_type is GameType.HUMAN_VS_AI, the method attempts
-    to make an automatic move for the AI by selecting a random direction among the
-    available directions. If no possible directions are available, it returns the
-    unchanged board and the active player. Otherwise, it makes the move and returns
-    the updated board with the new active player.
-
-    Example:
-        board, active_player = automatic_move(board, active_player, GameType.HUMAN_VS_AI)
-    """
-    if  active_player == -1 and game_type == GameType.HUMAN_VS_AI:
-        app.logger.warn('Automatic move to be done')
-        possible_directions = management.get_possible_directions(board, active_player)
-        app.logger.warn('Possible directions :' + str(possible_directions))
-        if len(possible_directions) == 0 :
-            return board, active_player
-        random_index = random.randint(0, len(possible_directions) - 1)
-        return management.move(board, active_player, possible_directions[random_index], active_player)
-    return board, active_player
 
 def convert_to_json(game: Game):
     """

@@ -1,8 +1,11 @@
 from flask import abort
 from .models import Game, GameType, Direction
+from .ai import AIManagement
 from collections import deque
 import logging as lg
 from typing import List
+import random
+
 
 class GameManagement:
     # ----------------------------------------------------------- PUBLIC METHODS -------------------------------------------------------------------------------
@@ -61,7 +64,8 @@ class GameManagement:
         Example:
             new_board, move_result = self.move(current_board, active_player, Direction.UP, player)
         """
-        lg.warning('Move player:' + str(player) + ' to ' + str(direction) + ' with active player = ' + str(active_player))
+        print('Move player:' + str(player) + ' to ' + str(direction) + ' with active player = ' + str(active_player))
+        self.__print_board(board)
         if player != active_player:
             abort(400, description="MOVE_USER_NOT_ACTIVE")
         if self.__is_game_over(board):
@@ -78,12 +82,44 @@ class GameManagement:
         
         # Set new position
         board[next_pos["row"]][next_pos["col"]] = 2 * player
-        lg.warning('Updated board with new position ' + str(board))
+        #lg.warning('Updated board with new position ' + str(board))
 
+        print('After move')
+        self.__print_board(board)
         self.__update_board_according_to_enclos(board)
-        lg.warning('Updated board with enclos' + str(board))
+        print('After enclos')
+        self.__print_board(board)
+        #lg.warning('Updated board with enclos' + str(board))
         game_over = self.__is_game_over(board)
         return board, 0 if game_over else -active_player
+        
+    def automatic_move(self, board, active_player, game_type):
+        """
+        Perform an automatic move in the game.
+
+        Parameters:
+            - board (bi dimensional array of int): A bi-directional array representing the current state of the game.
+            - active_player (int): The active player: Possible values values are -1 and 1
+            - game_type (GameType): The game type (e.g., GameType.HUMAN_VS_AI).
+
+        Returns:
+            tuple: A tuple containing the updated board and the active player.
+
+        If active_player is -1 and game_type is GameType.HUMAN_VS_AI, the method attempts
+        to make an automatic move for the AI by selecting a random direction among the
+        available directions. If no possible directions are available, it returns the
+        unchanged board and the active player. Otherwise, it makes the move and returns
+        the updated board with the new active player.
+
+        Example:
+            board, active_player = automatic_move(board, active_player, GameType.HUMAN_VS_AI)
+        """
+        if  active_player == -1 and game_type == GameType.HUMAN_VS_AI:
+            possible_directions = self.get_possible_directions(board,  active_player)
+            direction = AIManagement().get_move(board,  active_player, possible_directions)
+            if  direction != None :
+                return self.move(board, active_player, direction, active_player)
+        return board, active_player
 
     def compute_points(self, board: List[List[int]]):
         """
@@ -95,6 +131,7 @@ class GameManagement:
         Returns:
             tuple: A tuple containing the points of player 1 and player 2.
         """
+        # functionnal
         player_1_points = 0
         player_2_points = 0
         for x in range(len(board)):
@@ -208,7 +245,7 @@ class GameManagement:
             is_opponent_cell = self.__belong_cell_to_opponent(current_board, cell_position, active_player)
         """
         value = board[pos['row']][pos['col']]
-        return value == -1 * current_player or value == -1 * current_player
+        return value == -1 * current_player or value == -2 * current_player
 
     def __is_cell_in_board(self, board: List[List[int]], pos):
         """
@@ -330,4 +367,10 @@ class GameManagement:
                     reachable[nx][ny] = True
                     queue.append((nx, ny))
             
-    
+    def __print_board(self, board):
+        for row in board:
+            # Parcours des éléments de chaque ligne
+            for element in row:
+                print(element, end=' ')
+                # Passage à la ligne suivante après chaque ligne
+            print('')
